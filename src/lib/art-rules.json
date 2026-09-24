@@ -3,351 +3,205 @@
   {
    "match": "burrows",
    "slug": "burrows-badgers",
-   "rules": [
-    {
-     "kind": "faction",
-     "name": "Royalists",
-     "match": [
-      "badger knight in armour"
-     ]
+   "note": "Image numbers are the position of each <img> in the 2nd Edition ePUB. A number = illustration (subject found automatically); an object = photo crop (cx/top/h as fractions of the image).",
+   "cover": 0,
+   "scenes": [
+    4,
+    3,
+    12,
+    58,
+    60,
+    66,
+    219,
+    224
+   ],
+   "faction": {
+    "Royalists": 5,
+    "Rogues": 150,
+    "Freebeasts": 407,
+    "Kindred": 243,
+    "Witch Hunters": 21,
+    "Wildlings": {
+     "img": 264,
+     "cx": 0.43,
+     "top": 0.2,
+     "h": 0.62
     },
-    {
-     "kind": "faction",
-     "name": "Rogues",
-     "match": [
-      "rabbit dressed as a pirate"
-     ]
-    },
-    {
-     "kind": "faction",
-     "name": "Freebeasts",
-     "match": [
-      "fox dressed as a historical figure"
-     ]
-    },
-    {
-     "kind": "faction",
-     "name": "Kindred",
-     "match": [
-      "squirrel dressed as an archer"
-     ]
-    },
-    {
-     "kind": "faction",
-     "name": "Witch Hunters",
-     "match": [
-      "hedgehog dressed in medieval armor"
-     ]
-    },
-    {
-     "kind": "faction",
-     "name": "Wildlings",
-     "match": [
-      "plant growing from its head"
-     ]
-    },
-    {
-     "kind": "faction",
-     "name": "Arcane Conclave",
-     "match": [
-      "owl wearing a wizard"
-     ]
-    },
-    {
-     "kind": "faction",
-     "name": "Undead",
-     "match": [
-      "undead warrior"
-     ]
-    },
-    {
-     "kind": "faction",
-     "name": "Routiers",
-     "match": [
-      "squirrel dressed as a medieval knight"
-     ]
-    },
-    {
-     "kind": "faction",
-     "name": "Hillfolk",
-     "match": [
-      "hare dressed in scottish"
-     ]
-    },
-    {
-     "kind": "faction",
-     "name": "Campaign",
-     "match": [
-      "windmill"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Badger",
-     "match": [
-      "badger in a robe",
-      "badger"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Hare",
-     "match": [
-      "hare dressed in scottish"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Rabbit",
-     "match": [
-      "rabbit warriors",
-      "rabbit"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Mouse/ Dormouse",
-     "match": [
-      "mouse dressed as a knight",
-      "mouse"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Shrew",
-     "match": [
-      "mouse wearing a top hat"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Black Rat",
-     "match": [
-      "rat archer"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Great Brown Rat",
-     "match": [
-      "rat dressed in elaborate"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Hedgehog",
-     "match": [
-      "stirring a cauldron",
-      "hedgehog"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Squirrel",
-     "match": [
-      "squirrel dressed as an archer"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Otter",
-     "match": [
-      "otter in medieval armor",
-      "otter"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Fox",
-     "match": [
-      "fox character dressed as a lumberjack",
-      "fox"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Fennec Fox (Rare)",
-     "match": [
-      "fox and the other a rat"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Frog",
-     "match": [
-      "frog holding a hammer"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Toad",
-     "match": [
-      "frog-like creatures"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Mole",
-     "match": [
-      "mole wearing glasses",
-      "mole"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Ferret / Polecat",
-     "match": [
-      "ferret"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Weasel / Stoat",
-     "match": [
-      "rodent dressed as a rogue"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Cat",
-     "match": [
-      "cat dressed in medieval attire"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Wildcat",
-     "match": [
-      "a cat and a bear"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Hound (Medium)",
-     "match": [
-      "small dog dressed as a pirate"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Hound (Large)",
-     "match": [
-      "wolf-like creature"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Hound (Massive)",
-     "match": [
-      "dog and a gnome"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Bird (Small)",
-     "match": [
-      "bird characters"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Bird (Medium)",
-     "match": [
-      "bird dressed in a coat"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Bird (Large)",
-     "match": [
-      "owl wearing a hat"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Bird (Massive)",
-     "match": [
-      "owl with a hat attacks"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Raptor (Large)",
-     "match": [
-      "large eagle"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Raptor (Massive)",
-     "match": [
-      "winged creatures"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Noctule Bat",
-     "match": [
-      "bat holding"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Mist Ghast (Small/ Medium)",
-     "match": [
-      "ghasts"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Mist Ghast (Large)",
-     "match": [
-      "skeletal frames"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Mist Ghast (Massive)",
-     "match": [
-      "skeletal lizard"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Green Lizard (Rare)",
-     "match": [
-      "reptilian creatures"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Beaver",
-     "match": [
-      "boar"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Tracker Grub",
-     "match": [
-      "caterpillar-like"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Attack Grub",
-     "match": [
-      "caterpillar-like"
-     ]
-    },
-    {
-     "kind": "unit",
-     "name": "Damping Grub",
-     "match": [
-      "caterpillar-like"
-     ]
+    "Arcane Conclave": 57,
+    "Undead": 50,
+    "Routiers": 225,
+    "Hillfolk": 42,
+    "Campaign": {
+     "img": 4,
+     "cx": 0.5,
+     "top": 0.05,
+     "h": 0.9
     }
-   ]
+   },
+   "unit": {
+    "Badger": 5,
+    "Hedgehog": 21,
+    "Mole": 25,
+    "Hare": {
+     "img": 42,
+     "cx": 0.7,
+     "top": 0.0,
+     "h": 0.5
+    },
+    "Rabbit": {
+     "img": 23,
+     "cx": 0.45,
+     "top": 0.02,
+     "h": 0.9
+    },
+    "Bird (Small)": {
+     "img": 148,
+     "cx": 0.5,
+     "top": 0.22,
+     "h": 0.5
+    },
+    "Bird (Medium)": {
+     "img": 15,
+     "cx": 0.5,
+     "top": 0.2,
+     "h": 0.72
+    },
+    "Bird (Large)": {
+     "img": 57,
+     "cx": 0.58,
+     "top": 0.04,
+     "h": 0.55
+    },
+    "Bird (Massive)": {
+     "img": 434,
+     "cx": 0.52,
+     "top": 0.04,
+     "h": 0.7
+    },
+    "Raptor (Medium)": {
+     "img": 298,
+     "cx": 0.66,
+     "top": 0.08,
+     "h": 0.8
+    },
+    "Raptor (Large)": {
+     "img": 298,
+     "cx": 0.66,
+     "top": 0.08,
+     "h": 0.8
+    },
+    "Raptor (Massive)": {
+     "img": 298,
+     "cx": 0.66,
+     "top": 0.08,
+     "h": 0.8
+    },
+    "Noctule Bat": {
+     "img": 59,
+     "cx": 0.5,
+     "top": 0.14,
+     "h": 0.45
+    },
+    "Mouse/ Dormouse": 112,
+    "Shrew Knight Errant": 97,
+    "Shrew": 207,
+    "Black Rat": 154,
+    "Great Brown Rat": 183,
+    "Otter": 144,
+    "Squirrel": 225,
+    "Cat": 267,
+    "Siamese Cat (Rare)": 267,
+    "Wildcat": {
+     "img": 396,
+     "cx": 0.5,
+     "top": 0.2,
+     "h": 0.65
+    },
+    "Ferret / Polecat": 278,
+    "Weasel / Stoat": {
+     "img": 44,
+     "cx": 0.48,
+     "top": 0.12,
+     "h": 0.75
+    },
+    "Hound (Medium)": 299,
+    "Hound (Large)": 299,
+    "Hound (Massive)": 299,
+    "Fox": 354,
+    "Fennec Fox (Rare)": 407,
+    "Frog": {
+     "img": 319,
+     "cx": 0.45,
+     "top": 0.18,
+     "h": 0.55
+    },
+    "Toad": {
+     "img": 319,
+     "cx": 0.45,
+     "top": 0.18,
+     "h": 0.55
+    },
+    "Armadillo (Rare)": {
+     "img": 124,
+     "cx": 0.52,
+     "top": 0.38,
+     "h": 0.56
+    },
+    "Raccoon (Rare)": {
+     "img": 295,
+     "cx": 0.52,
+     "top": 0.12,
+     "h": 0.78
+    },
+    "Great Crested Newt": {
+     "img": 264,
+     "cx": 0.43,
+     "top": 0.2,
+     "h": 0.62
+    },
+    "Green Lizard (Rare)": {
+     "img": 206,
+     "cx": 0.27,
+     "top": 0.2,
+     "h": 0.75
+    },
+    "Attack Grub": {
+     "img": 145,
+     "cx": 0.58,
+     "top": 0.5,
+     "h": 0.45
+    },
+    "Damping Grub": {
+     "img": 145,
+     "cx": 0.58,
+     "top": 0.5,
+     "h": 0.45
+    },
+    "Tracker Grub": {
+     "img": 145,
+     "cx": 0.58,
+     "top": 0.5,
+     "h": 0.45
+    },
+    "Mist Ghast (Small/ Medium)": {
+     "img": 71,
+     "cx": 0.87,
+     "top": 0.48,
+     "h": 0.46
+    },
+    "Mist Ghast (Large)": {
+     "img": 308,
+     "cx": 0.62,
+     "top": 0.26,
+     "h": 0.66
+    },
+    "Mist Ghast (Massive)": {
+     "img": 71,
+     "cx": 0.77,
+     "top": 0.18,
+     "h": 0.7
+    }
+   }
   }
  ]
 }

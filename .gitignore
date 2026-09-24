@@ -6,3 +6,4 @@ dev-dist
 # never commit rulebook art or ePUBs
 *.epub
 public/art/
+e2e/shots/

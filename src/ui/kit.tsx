@@ -1,6 +1,6 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { X, WifiOff } from 'lucide-react';
+import { PawPrint, X, WifiOff } from 'lucide-react';
 import { db } from '../lib/db';
 import { bundledArt, type ArtManifest } from '../lib/art';
 import type { GamePack } from '../engine/types';
@@ -77,8 +77,9 @@ export function Portrait({ src, name, size = 48, className = '' }: { src?: strin
   return src ? (
     <img src={src} alt="" loading="lazy" className={`object-cover object-top rounded-xl bg-paper-2 shrink-0 ${className}`} style={{ width: size, height: size }} />
   ) : (
-    <div className={`rounded-xl bg-paper-2 text-ink-3 font-display font-semibold grid place-items-center shrink-0 ${className}`} style={{ width: size, height: size, fontSize: size * 0.34 }}>
-      {initials}
+    <div className={`relative overflow-hidden rounded-xl bg-[radial-gradient(circle_at_30%_25%,var(--color-card),var(--color-paper-2))] text-ink-3 font-display font-semibold grid place-items-center shrink-0 ${className}`} style={{ width: size, height: size, fontSize: size * 0.34 }}>
+      <PawPrint className="absolute opacity-15 -rotate-12" style={{ width: size * 0.8, height: size * 0.8 }} />
+      <span className="relative">{initials}</span>
     </div>
   );
 }

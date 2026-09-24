@@ -1,6 +1,7 @@
 // Read-only "character sheet" for one band member, modelled on the rulebook's roster sheet:
 // name/species, level, wound track, fate/XP, nine stat shields, skills & spells, six equipment slots.
-import { Minus, Pencil, Plus, Skull } from 'lucide-react';
+import { Dices, Minus, Pencil, Plus, Skull } from 'lucide-react';
+import { nameFor } from '../lib/names';
 import type { RosterEngine } from '../engine/roster';
 import type { Selection } from '../engine/types';
 import { buildSheet, type SheetItem } from '../lib/describe';
@@ -66,9 +67,13 @@ export function CharacterSheet({ e, sel, art, commit, onEdit, printable }: {
         <div className="min-w-0 flex-1">
           <label className="block text-[10px] font-bold uppercase tracking-[0.14em] text-ink-3">Name</label>
           {editable ? (
+            <div className="flex items-end gap-1.5">
             <input className="w-full bg-transparent font-display text-2xl font-semibold leading-tight border-b border-dashed border-line focus:border-accent focus:outline-none placeholder:text-ink-3/70"
               placeholder={`Name your ${species.replace(/\s*\(.*\)/, '')}…`} value={sel.customName ?? ''}
               onChange={(ev) => { sel.customName = ev.target.value || undefined; commit?.(); }} aria-label="Character name" />
+              <button className="btn btn-ghost !p-1.5 shrink-0 text-ink-3 hover:text-accent no-print" title="Suggest another name" aria-label="Suggest another name"
+                onClick={() => { sel.customName = nameFor(e, sel); commit?.(); }}><Dices size={17} /></button>
+            </div>
           ) : (
             <div className="font-display text-2xl font-semibold leading-tight border-b border-line">{sel.customName || <span className="text-ink-3">&nbsp;</span>}</div>
           )}

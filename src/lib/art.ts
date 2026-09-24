@@ -1,12 +1,10 @@
 // Art bundled with this (personal) build, served from public/art/<slug>/.
 import artRules from './art-rules.json';
-import type { ArtRow } from './db';
 import type { GamePack } from '../engine/types';
 
-export interface ArtRule { kind: ArtRow['kind']; name: string; match: string[] }
 
 /** Which bundled art set belongs to which game */
-export const ART_GAMES = artRules.games as { match: string; slug: string; rules: ArtRule[] }[];
+export const ART_GAMES = artRules.games as { match: string; slug: string }[];
 
 export function gameArt(pack: GamePack) {
   return ART_GAMES.find((g) => new RegExp(g.match, 'i').test(pack.name));
