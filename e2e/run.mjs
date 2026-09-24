@@ -9,13 +9,12 @@ const page = await ctx.newPage();
 const errs=[]; page.on('pageerror',e=>errs.push(e.message)); page.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
 await page.goto('http://localhost:4173/');
 await page.screenshot({path:S+'/s1-home.png'});
-await page.getByRole('button',{name:'Add game'}).first().click();
-await page.getByRole('button',{name:/From files/}).click();
-await page.setInputFiles('input[type=file]', files);
+// bundled pack + art: no imports needed
+await page.waitForTimeout(1500);
+await page.screenshot({path:S+'/s1-home.png'});
+await page.getByRole('link',{name:/Burrows/}).first().click();
 await page.waitForURL(/#\/game\//,{timeout:20000});
-await page.setInputFiles('input[accept=".epub"]', EPUB);
-await page.getByText(/Imported \d+ images/).waitFor({timeout:60000});
-await page.waitForTimeout(500);
+await page.waitForTimeout(800);
 await page.screenshot({path:S+'/s2-game.png'});
 await page.getByRole('button',{name:/Freebeasts/}).click();
 await page.fill('#rn','The Thornwood Irregulars');
@@ -28,6 +27,15 @@ await page.screenshot({path:S+'/s4-band.png'});
 
 // unit detail: make hedgehog a magic user
 await page.getByRole('button',{name:/Hedgehog/}).first().click();
+await page.waitForTimeout(300);
+await page.screenshot({path:S+'/s5a-view.png'});
+await page.getByLabel('Character name').first().fill('Bramble Quillsworth');
+await page.getByLabel(/^Wound 5/).first().click();
+await page.getByRole('button',{name:'Strike · 1'}).first().hover().catch(()=>{});
+await page.locator('.shield').nth(1).hover(); await page.waitForTimeout(300);
+await page.screenshot({path:S+'/s5b-tip.png'});
+await page.getByRole('button',{name:/^Edit$/}).first().click();
+await page.waitForTimeout(300);
 await page.getByRole('button',{name:'Magic User'}).click();
 await page.getByRole('button',{name:'Magical Archetypes'}).click().catch(()=>{});
 await page.waitForTimeout(300);

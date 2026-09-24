@@ -2,7 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { X, WifiOff } from 'lucide-react';
 import { db } from '../lib/db';
-import { artUrl } from '../lib/art';
+import { artUrl, bundledArt, type ArtManifest } from '../lib/art';
 import type { GamePack } from '../engine/types';
 
 export function useOnline() {
@@ -21,10 +21,23 @@ export function OfflineBadge() {
   return <span className="pill" title="Everything still works offline"><WifiOff size={12} /> Offline</span>;
 }
 
-/** All art for a pack as { 'kind|name': url } */
+/** All art for a pack as { 'kind|name': url }: bundled art first, then any ePUB art imported in this browser */
 export function useArt(packId?: string) {
   const rows = useLiveQuery(() => (packId ? db.art.where('packId').equals(packId).toArray() : []), [packId]);
+  const packRow = useLiveQuery(() => (packId ? db.packs.get(packId) : undefined), [packId]);
+  const [bundle, setBundle] = useState<ArtManifest | null>(null);
+  useEffect(() => {
+    let live = true;
+    if (packRow?.pack) bundledArt(packRow.pack).then((m) => live && setBundle(m));
+    return () => { live = false; };
+  }, [packRow?.id]);
   const map: Record<string, string> = {};
+  if (bundle) {
+    if (bundle.cover) map['cover|cover'] = bundle.cover;
+    for (const [k, v] of Object.entries(bundle.faction)) map[`faction|${k}`] = v;
+    for (const [k, v] of Object.entries(bundle.unit)) map[`unit|${k}`] = v;
+    bundle.scene.forEach((v, i) => (map[`scene|${i}`] = v));
+  }
   for (const r of rows ?? []) map[`${r.kind}|${r.name}`] = artUrl(r)!;
   return map;
 }

@@ -1,10 +1,14 @@
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-  AlertTriangle, ArrowLeft, Check, ChevronDown, ChevronRight, Copy, Download, Minus, Plus, Printer, Search, Trash2, Users, X,
+  AlertTriangle, ArrowLeft, Check, ChevronDown, ChevronRight, Copy, Download, Info, Minus, Pencil, Plus, Printer, Search, Trash2, Users, X,
 } from 'lucide-react';
 import { db, saveRoster } from '../lib/db';
-import { RosterEngine, type OptionNode, type SelView } from '../engine/roster';
+import { RosterEngine, type EvaluatedProfile, type OptionNode } from '../engine/roster';
+import { buildSheet, profileText } from '../lib/describe';
+import { hintsFor } from '../lib/hints';
+import { Tip } from '../ui/Tip';
+import { CharacterSheet } from '../ui/CharacterSheet';
 import type { Force, GamePack, Roster, Selection } from '../engine/types';
 import { downloadJson } from '../lib/importer';
 import { Empty, OfflineBadge, Portrait, Sheet, artFor, fmtCosts, useArt } from '../ui/kit';
@@ -34,11 +38,6 @@ function useRoster(rosterId: string) {
   return { state, engine: engine.current, v, commit };
 }
 
-
-function shortStat(name: string) {
-  const known: Record<string, string> = { Movement: 'M', Strike: 'S', Block: 'B', Ranged: 'R', Nimbleness: 'N', Concealment: 'C', Awareness: 'A', Fortitude: 'F', Presence: 'P', Level: 'Lvl' };
-  return known[name] ?? (name.length <= 4 ? name : name.slice(0, 3));
-}
 
 function bandRating(e: RosterEngine) {
   let total = 0, found = false;
@@ -172,30 +171,58 @@ function Recruit({ e, force, art, commit, onAdded }: { e: RosterEngine; force: F
 // ---------------------------------------------------------------- band list
 
 function UnitRow({ e, sel, art, selected, onClick, errorIds }: { e: RosterEngine; sel: Selection; art: Record<string, string>; selected: boolean; onClick: () => void; errorIds: Set<string> }) {
-  const v = e.view(sel)!;
-  const unit = v.profiles.find((p) => p.characteristics.length > 4);
-  const upgrades = sel.children.map((c) => e.view(c)).filter((c): c is SelView => !!c && !c.hidden && !/^setup only/i.test(c.name));
+  const sheet = buildSheet(e, sel);
+  if (!sheet) return null;
+  const v = sheet.view;
+  const hints = hintsFor(e.pack);
+  const isModel = v.eff.node.entryType === 'model' || v.eff.node.entryType === 'unit';
+  const stats = sheet.unit?.characteristics ?? [];
+  const gear = [...sheet.slots.flatMap((x) => x.items), ...sheet.otherGear];
   const hasErr = errorIds.has(sel.id) || sel.children.some((c) => errorIds.has(c.id));
+  const wounds = sel.state?.wounds ?? 0;
   return (
-    <button onClick={onClick} className={`card w-full text-left p-3 flex gap-3 transition-colors ${selected ? '!border-accent ring-2 ring-accent/20' : 'hover:border-accent/60'}`}>
-      <Portrait src={artFor(art, 'unit', v.eff.node.name)} name={v.name} size={56} />
+    <div role="button" tabIndex={0} onClick={onClick} onKeyDown={(ev) => (ev.key === 'Enter' || ev.key === ' ') && (ev.preventDefault(), onClick())}
+      className={`card w-full min-w-0 text-left p-3 flex gap-3 cursor-pointer transition-colors ${selected ? '!border-accent ring-2 ring-accent/20' : 'hover:border-accent/60'}`}>
+      <Portrait src={artFor(art, 'unit', v.eff.node.name)} name={v.name} size={isModel ? 64 : 44} />
       <div className="min-w-0 flex-1">
         <div className="flex items-start gap-2">
           <div className="min-w-0 flex-1">
-            <div className="font-semibold leading-tight truncate">{sel.customName || v.name}{sel.number > 1 ? ` ×${sel.number}` : ''}</div>
-            {sel.customName && <div className="text-xs text-ink-3">{v.name}</div>}
+            <div className="font-display font-semibold text-[17px] leading-tight truncate">{sel.customName || v.name}{sel.number > 1 ? ` ×${sel.number}` : ''}</div>
+            {isModel && <div className="text-xs text-ink-3 truncate">{sel.customName ? v.name : <span className="italic">Unnamed {v.name.replace(/\s*\(.*\)/, '').toLowerCase()}</span>}{sheet.status.length ? ' · ' + sheet.status.map((x) => x.name).join(', ') : ''}</div>}
           </div>
           {hasErr && <AlertTriangle size={16} className="text-danger shrink-0" />}
+          {wounds > 0 && <span className="pill !bg-danger/10 !text-danger shrink-0">{wounds} wnd</span>}
           {fmtCosts(e.pack, v.totalCosts) && <span className="pill shrink-0">{fmtCosts(e.pack, v.totalCosts)}</span>}
         </div>
-        {unit && (
-          <div className="flex flex-wrap gap-x-2 gap-y-0.5 mt-1 text-xs text-ink-2">
-            {unit.characteristics.map((c) => <span key={c.typeId}><span className="text-ink-3">{shortStat(c.name)}</span> <b className="font-semibold">{c.value}</b></span>)}
+        {stats.length > 0 && (
+          <div className="grid grid-cols-10 gap-0.5 mt-2 text-center">
+            {stats.map((c) => (
+              <Tip key={c.typeId} as="span" title={`${c.name} · ${c.value}`} content={hints.stats[c.name]?.help} className="rounded-md bg-paper-2 py-0.5">
+                <b className="block text-[13px] font-display leading-tight">{c.value}</b>
+                <span className="block text-[8.5px] font-bold uppercase tracking-wide text-ink-3 leading-tight">{c.name.slice(0, 3)}</span>
+              </Tip>
+            ))}
           </div>
         )}
-        {upgrades.length > 0 && <div className="text-xs text-ink-3 mt-1 line-clamp-2">{upgrades.map((u) => u.name + (u.sel.number > 1 ? ` ×${u.sel.number}` : '')).join(' · ')}</div>}
+        {(gear.length > 0 || sheet.skills.length > 0 || sheet.spells.length > 0) && (
+          <div className="flex flex-wrap gap-1 mt-2">
+            {gear.map((g) => (
+              <Tip key={g.id} as="span" title={g.name} content={g.detail} className="text-[11.5px] rounded-md border border-line px-1.5 py-0.5 text-ink-2 hover:border-accent">
+                ⚔︎ {g.name}{g.count ? ` ×${g.count}` : ''}
+              </Tip>
+            ))}
+            {sheet.skills.map((k) => (
+              <Tip key={k.id} as="span" title={k.name + (k.annotation ? ` (${k.annotation})` : '')} content={k.detail} className="text-[11.5px] rounded-md bg-paper-2 px-1.5 py-0.5 text-ink-2 hover:ring-1 hover:ring-accent">
+                {k.name}{k.annotation ? ` (${k.annotation})` : ''}
+              </Tip>
+            ))}
+            {sheet.spells.map((k) => (
+              <Tip key={k.id} as="span" title={k.name} content={k.detail} className="text-[11.5px] rounded-md bg-moss/15 px-1.5 py-0.5 text-ink-2">✦ {k.name}</Tip>
+            ))}
+          </div>
+        )}
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -287,6 +314,20 @@ function OptionGroup({ e, parent, o, commit, depth }: { e: RosterEngine; parent:
   );
 }
 
+/** Rule text for an option (selected or not), for its tooltip */
+function optionDetail(e: RosterEngine, o: OptionNode): string {
+  const pack = e.pack;
+  const parts: string[] = [];
+  for (const p of o.eff.profiles) parts.push(profileText(p as unknown as EvaluatedProfile));
+  for (const l of o.eff.infoLinks) {
+    if (l.type === 'rule') { const r = pack.sharedRules[l.targetId]; if (r?.description) parts.push(`${l.name || r.name}: ${r.description}`); }
+    else { const p = pack.sharedProfiles[l.targetId]; if (p) parts.push((o.eff.infoLinks.length > 1 ? `${p.name}: ` : '') + profileText(p as unknown as EvaluatedProfile)); }
+  }
+  for (const r of o.eff.rules) if (r.description) parts.push(`${r.name}: ${r.description}`);
+  if (o.eff.node.comment && !parts.length) parts.push(o.eff.node.comment);
+  return parts.filter(Boolean).join('\n\n');
+}
+
 function OptionEntry({ e, parent, o, commit, depth, siblings }: { e: RosterEngine; parent: Parent; o: OptionNode; commit: () => void; depth: number; siblings: OptionNode[] }) {
   const sel = o.selections[0];
   const pack = e.pack;
@@ -299,6 +340,7 @@ function OptionEntry({ e, parent, o, commit, depth, siblings }: { e: RosterEngin
   const childOpts = sel ? e.options({ kind: 'sel', sel }).filter(hasVisible) : [];
   const v = sel ? e.view(sel) : undefined;
   const cost = v ? v.totalCosts : o.cost;
+  const detail = optionDetail(e, o);
   return (
     <div className={`rounded-lg ${sel ? 'bg-paper-2/70' : ''}`}>
       <div className="flex items-center gap-2 px-2 py-1.5 min-h-10">
@@ -318,6 +360,7 @@ function OptionEntry({ e, parent, o, commit, depth, siblings }: { e: RosterEngin
             </div>
           </>
         )}
+        {detail && <Tip title={o.name} content={detail} className="text-ink-3 hover:text-accent p-1 -m-1" ><Info size={15} /></Tip>}
         {Object.keys(cost).length > 0 && <span className="text-xs text-ink-3 whitespace-nowrap">{fmtCosts(pack, cost)}</span>}
       </div>
       {o.info.length > 0 && <div className="px-9 -mt-1 pb-1 text-xs text-accent">{o.info.join(' · ')}</div>}
@@ -330,74 +373,63 @@ function OptionEntry({ e, parent, o, commit, depth, siblings }: { e: RosterEngin
 
 function UnitDetail({ e, sel, art, commit, onClose, errors }: { e: RosterEngine; sel: Selection; art: Record<string, string>; commit: () => void; onClose: () => void; errors: string[] }) {
   const v = e.view(sel);
-  const [openRule, setOpenRule] = useState<string | null>(null);
+  const [mode, setMode] = useState<'view' | 'edit'>('view');
   if (!v) return null;
-  const pack = e.pack;
-  const unit = v.allProfiles.find((p) => p.characteristics.length > 4 && p.typeName === v.profiles[0]?.typeName) ?? v.profiles[0];
-  const others = v.allProfiles.filter((p) => p !== unit);
   const img = artFor(art, 'unit', v.eff.node.name);
-  const chips = [...v.allAbilities, ...v.allRules];
   const opts = e.options({ kind: 'sel', sel });
+  const isModel = v.eff.node.entryType === 'model' || v.eff.node.entryType === 'unit';
   return (
     <div className="scroll-y h-full relative">
       <div className="sticky top-0 z-10 h-0"><button className="absolute top-2 right-2 btn !p-2 bg-card/80 backdrop-blur" onClick={onClose} aria-label="Close"><X size={16} /></button></div>
-      {img ? (
-        <div className="h-44 sm:h-52 overflow-hidden relative">
-          <img src={img} alt="" className="w-full h-full object-cover object-top" />
-          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/10 to-transparent" />
+      {img && mode === 'view' ? (
+        <div className="h-40 sm:h-48 overflow-hidden relative">
+          <img src={img} alt="" className="w-full h-full object-cover object-[50%_20%]" />
+          <div className="absolute inset-0 bg-gradient-to-t from-card via-card/20 to-transparent" />
         </div>
-      ) : <div className="h-6" />}
-      <div className={`px-4 pb-6 relative ${img ? '-mt-10' : ''}`}>
-        <input className="bg-transparent font-display text-2xl font-semibold w-full focus:outline-none placeholder:text-ink" placeholder={v.name}
-          value={sel.customName ?? ''} onChange={(ev) => { sel.customName = ev.target.value || undefined; commit(); }} aria-label="Name" />
-        <div className="flex items-center gap-2 text-sm text-ink-3 mt-0.5">
-          <span>{sel.customName ? v.name : pack.categories[v.primaryCategory ?? ''] ?? ''}</span>
-          <span className="pill ml-auto">{fmtCosts(pack, v.totalCosts) || '0'}</span>
-        </div>
-        {v.info.length > 0 && <div className="text-xs text-accent mt-1">{v.info.join(' · ')}</div>}
+      ) : <div className="h-12" />}
+      <div className={`px-4 pb-6 relative ${img && mode === 'view' ? '-mt-8' : ''}`}>
         {errors.length > 0 && (
-          <div className="mt-3 rounded-xl bg-danger/10 text-danger text-sm p-3 space-y-1">
+          <div className="mb-3 rounded-xl bg-danger/10 text-danger text-sm p-3 space-y-1">
             {errors.map((m, i) => <div key={i} className="flex gap-2"><AlertTriangle size={14} className="mt-0.5 shrink-0" /> {m}</div>)}
           </div>
         )}
-        {unit && (
-          <div className="stat-grid mt-4">
-            {unit.characteristics.map((c) => <div key={c.typeId} className="stat"><b>{c.value}</b><span>{shortStat(c.name)}</span></div>)}
-          </div>
-        )}
-        {chips.length > 0 && (
-          <div className="mt-4">
-            <div className="flex flex-wrap gap-1.5">
-              {chips.map((c) => (
-                <button key={c.id + c.name} onClick={() => setOpenRule(openRule === c.name ? null : c.name)}
-                  className={`pill !text-sm !py-1 hover:!text-ink ${openRule === c.name ? '!bg-accent !text-white' : ''}`}>
-                  {c.name.replace(/\s*\(X\)$/, '')}{c.annotation ? ` (${c.annotation})` : ''}
-                </button>
-              ))}
-            </div>
-            {openRule && (
-              <p className="text-sm text-ink-2 mt-2 bg-paper-2 rounded-xl p-3 whitespace-pre-line">{chips.find((c) => c.name === openRule)?.description || 'No description.'}</p>
+        {mode === 'view' ? (
+          <>
+            {isModel ? <CharacterSheet e={e} sel={sel} art={art} commit={commit} onEdit={() => setMode('edit')} /> : (
+              <div>
+                <h2 className="font-display text-2xl font-semibold">{v.name}</h2>
+                <div className="mt-3 space-y-2 text-sm">
+                  {[...v.profiles, ...v.abilities.map((a) => a.profile!).filter(Boolean)].map((p) => <p key={p.id} className="whitespace-pre-line text-ink-2">{profileText(p)}</p>)}
+                  {v.rules.map((r) => <p key={r.id}><b>{r.name}.</b> <span className="text-ink-2">{r.description}</span></p>)}
+                </div>
+                {opts.some(hasVisible) && <button className="btn mt-4" onClick={() => setMode('edit')}><Pencil size={15} /> Edit options</button>}
+              </div>
             )}
-          </div>
+          </>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 mb-3">
+              <div className="min-w-0 flex-1">
+                <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-3">Editing</div>
+                <h2 className="font-display text-xl font-semibold truncate">{sel.customName || v.name}</h2>
+              </div>
+              <button className="btn btn-primary !px-3" onClick={() => setMode('view')}><Check size={15} /> Done</button>
+            </div>
+            {isModel && (
+              <label className="block mb-4">
+                <span className="text-[10px] font-bold uppercase tracking-[0.14em] text-ink-3">Character name</span>
+                <input className="input mt-1" placeholder={`Name your ${v.name.replace(/\s*\(.*\)/, '')}…`} value={sel.customName ?? ''}
+                  onChange={(ev) => { sel.customName = ev.target.value || undefined; commit(); }} />
+              </label>
+            )}
+            {v.info.length > 0 && <div className="text-xs text-accent mb-2">{v.info.join(' · ')}</div>}
+            <OptionList e={e} parent={{ kind: 'sel', sel }} opts={opts} commit={commit} />
+            <div className="flex gap-2 mt-6">
+              <button className="btn flex-1" onClick={() => { e.duplicate(sel.id); commit(); }}><Copy size={16} /> Duplicate</button>
+              <button className="btn flex-1 !text-danger" onClick={() => { e.remove(sel.id); commit(); onClose(); }}><Trash2 size={16} /> Remove</button>
+            </div>
+          </>
         )}
-        {others.length > 0 && (
-          <div className="mt-4 space-y-2">
-            {others.map((p) => (
-              <details key={p.id + p.name} className="rounded-xl border border-line">
-                <summary className="px-3 py-2 text-sm font-semibold cursor-pointer flex gap-2"><span className="text-ink-3 font-normal">{p.typeName}</span> {p.name}</summary>
-                <dl className="px-3 pb-3 text-sm grid grid-cols-[auto_1fr] gap-x-3 gap-y-1">
-                  {p.characteristics.filter((c) => c.value && c.value !== '-').map((c) => (<Fragment key={c.typeId}><dt className="text-ink-3">{c.name}</dt><dd className="whitespace-pre-line">{c.value}</dd></Fragment>))}
-                </dl>
-              </details>
-            ))}
-          </div>
-        )}
-        <h3 className="text-sm font-bold uppercase tracking-wider text-ink-3 mt-6 mb-2">Options</h3>
-        <OptionList e={e} parent={{ kind: 'sel', sel }} opts={opts} commit={commit} />
-        <div className="flex gap-2 mt-6">
-          <button className="btn flex-1" onClick={() => { e.duplicate(sel.id); commit(); }}><Copy size={16} /> Duplicate</button>
-          <button className="btn flex-1 !text-danger" onClick={() => { e.remove(sel.id); commit(); onClose(); }}><Trash2 size={16} /> Remove</button>
-        </div>
       </div>
     </div>
   );

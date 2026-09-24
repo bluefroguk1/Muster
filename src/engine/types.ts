@@ -156,6 +156,8 @@ export interface Selection {
   children: Selection[];
   customName?: string;
   notes?: string;
+  /** play-time tracking (wounds marked, fate, experience) */
+  state?: { wounds?: number; fate?: number; xp?: number };
 }
 
 export interface Force {

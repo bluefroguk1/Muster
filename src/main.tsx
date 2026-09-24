@@ -9,6 +9,9 @@ import { RosterEditor } from './pages/RosterEditor';
 import { Cards } from './pages/Cards';
 import { Settings } from './pages/Settings';
 import { OfflineBadge } from './ui/kit';
+import { seedPacks } from './lib/seed';
+
+seedPacks();
 
 try { const s = localStorage.getItem('theme'); document.documentElement.classList.toggle('dark', s ? s === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches); } catch { /* ignore */ }
 

@@ -1,6 +1,7 @@
 // Art: pull illustrations out of the user's own ePUB rulebook and store them locally.
 // Nothing is bundled with the app; images live only in this browser's IndexedDB.
 import JSZip from 'jszip';
+import artRules from './art-rules.json';
 import { db, type ArtRow } from './db';
 import type { GamePack } from '../engine/types';
 
@@ -8,59 +9,31 @@ interface Img { path: string; alt: string; order: number }
 export interface ArtRule { kind: ArtRow['kind']; name: string; match: string[] }
 
 /** Hand-picked matches for Burrows & Badgers (matched against image alt text) */
-const BURROWS_RULES: ArtRule[] = [
-  { kind: 'faction', name: 'Royalists', match: ['badger knight in armour'] },
-  { kind: 'faction', name: 'Rogues', match: ['rabbit dressed as a pirate'] },
-  { kind: 'faction', name: 'Freebeasts', match: ['fox dressed as a historical figure'] },
-  { kind: 'faction', name: 'Kindred', match: ['squirrel dressed as an archer'] },
-  { kind: 'faction', name: 'Witch Hunters', match: ['hedgehog dressed in medieval armor'] },
-  { kind: 'faction', name: 'Wildlings', match: ['plant growing from its head'] },
-  { kind: 'faction', name: 'Arcane Conclave', match: ['owl wearing a wizard'] },
-  { kind: 'faction', name: 'Undead', match: ['undead warrior'] },
-  { kind: 'faction', name: 'Routiers', match: ['squirrel dressed as a medieval knight'] },
-  { kind: 'faction', name: 'Hillfolk', match: ['hare dressed in scottish'] },
-  { kind: 'faction', name: 'Campaign', match: ['windmill'] },
-  { kind: 'unit', name: 'Badger', match: ['badger in a robe', 'badger'] },
-  { kind: 'unit', name: 'Hare', match: ['hare dressed in scottish'] },
-  { kind: 'unit', name: 'Rabbit', match: ['rabbit warriors', 'rabbit'] },
-  { kind: 'unit', name: 'Mouse/ Dormouse', match: ['mouse dressed as a knight', 'mouse'] },
-  { kind: 'unit', name: 'Shrew', match: ['mouse wearing a top hat'] },
-  { kind: 'unit', name: 'Black Rat', match: ['rat archer'] },
-  { kind: 'unit', name: 'Great Brown Rat', match: ['rat dressed in elaborate'] },
-  { kind: 'unit', name: 'Hedgehog', match: ['stirring a cauldron', 'hedgehog'] },
-  { kind: 'unit', name: 'Squirrel', match: ['squirrel dressed as an archer'] },
-  { kind: 'unit', name: 'Otter', match: ['otter in medieval armor', 'otter'] },
-  { kind: 'unit', name: 'Fox', match: ['fox character dressed as a lumberjack', 'fox'] },
-  { kind: 'unit', name: 'Fennec Fox (Rare)', match: ['fox and the other a rat'] },
-  { kind: 'unit', name: 'Frog', match: ['frog holding a hammer'] },
-  { kind: 'unit', name: 'Toad', match: ['frog-like creatures'] },
-  { kind: 'unit', name: 'Mole', match: ['mole wearing glasses', 'mole'] },
-  { kind: 'unit', name: 'Ferret / Polecat', match: ['ferret'] },
-  { kind: 'unit', name: 'Weasel / Stoat', match: ['rodent dressed as a rogue'] },
-  { kind: 'unit', name: 'Cat', match: ['cat dressed in medieval attire'] },
-  { kind: 'unit', name: 'Wildcat', match: ['a cat and a bear'] },
-  { kind: 'unit', name: 'Hound (Medium)', match: ['small dog dressed as a pirate'] },
-  { kind: 'unit', name: 'Hound (Large)', match: ['wolf-like creature'] },
-  { kind: 'unit', name: 'Hound (Massive)', match: ['dog and a gnome'] },
-  { kind: 'unit', name: 'Bird (Small)', match: ['bird characters'] },
-  { kind: 'unit', name: 'Bird (Medium)', match: ['bird dressed in a coat'] },
-  { kind: 'unit', name: 'Bird (Large)', match: ['owl wearing a hat'] },
-  { kind: 'unit', name: 'Bird (Massive)', match: ['owl with a hat attacks'] },
-  { kind: 'unit', name: 'Raptor (Large)', match: ['large eagle'] },
-  { kind: 'unit', name: 'Raptor (Massive)', match: ['winged creatures'] },
-  { kind: 'unit', name: 'Noctule Bat', match: ['bat holding'] },
-  { kind: 'unit', name: 'Mist Ghast (Small/ Medium)', match: ['ghasts'] },
-  { kind: 'unit', name: 'Mist Ghast (Large)', match: ['skeletal frames'] },
-  { kind: 'unit', name: 'Mist Ghast (Massive)', match: ['skeletal lizard'] },
-  { kind: 'unit', name: 'Green Lizard (Rare)', match: ['reptilian creatures'] },
-  { kind: 'unit', name: 'Beaver', match: ['boar'] },
-  { kind: 'unit', name: 'Tracker Grub', match: ['caterpillar-like'] },
-  { kind: 'unit', name: 'Attack Grub', match: ['caterpillar-like'] },
-  { kind: 'unit', name: 'Damping Grub', match: ['caterpillar-like'] },
-];
+export const ART_GAMES = artRules.games as { match: string; slug: string; rules: ArtRule[] }[];
 
+export function gameArt(pack: GamePack) {
+  return ART_GAMES.find((g) => new RegExp(g.match, 'i').test(pack.name));
+}
 export function rulesFor(pack: GamePack): ArtRule[] {
-  return /burrows/i.test(pack.name) ? BURROWS_RULES : [];
+  return gameArt(pack)?.rules ?? [];
+}
+
+/** Art bundled with this (personal) build: public/art/<slug>/manifest.json, made by `npm run art` */
+export interface ArtManifest { cover?: string; faction: Record<string, string>; unit: Record<string, string>; scene: string[] }
+const manifests = new Map<string, Promise<ArtManifest | null>>();
+export function bundledArt(pack: GamePack): Promise<ArtManifest | null> {
+  const g = gameArt(pack);
+  if (!g) return Promise.resolve(null);
+  if (!manifests.has(g.slug)) {
+    const base = `${import.meta.env.BASE_URL}art/${g.slug}/`;
+    manifests.set(g.slug, fetch(base + 'manifest.json').then(async (r) => {
+      if (!r.ok || !(r.headers.get('content-type') ?? '').includes('json')) return null;
+      const m = (await r.json()) as ArtManifest;
+      const abs = (f: string) => base + f;
+      return { cover: m.cover && abs(m.cover), faction: Object.fromEntries(Object.entries(m.faction).map(([k, v]) => [k, abs(v)])), unit: Object.fromEntries(Object.entries(m.unit).map(([k, v]) => [k, abs(v)])), scene: m.scene.map(abs) };
+    }).catch(() => null));
+  }
+  return manifests.get(g.slug)!;
 }
 
 async function listImages(zip: JSZip): Promise<{ imgs: Img[]; cover?: string }> {
