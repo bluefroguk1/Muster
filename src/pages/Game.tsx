@@ -1,10 +1,9 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useLiveQuery } from 'dexie-react-hooks';
-import { ArrowLeft, Download, ImagePlus, Loader2, Plus, RefreshCw, Swords, Trash2, Upload } from 'lucide-react';
+import { ArrowLeft, Download, Loader2, Plus, RefreshCw, Swords, Trash2, Upload } from 'lucide-react';
 import { db, saveRoster, savePack } from '../lib/db';
 import { RosterEngine, newRoster } from '../engine/roster';
-import { importArtFromEpub } from '../lib/art';
 import { downloadJson, importFromGithub } from '../lib/importer';
 import { Empty, Portrait, Sheet, artFor, usePack, useArt, fmtCosts } from '../ui/kit';
 import type { Catalogue, GamePack, Roster } from '../engine/types';
@@ -82,11 +81,6 @@ export function GamePage() {
   const factions = pack.catalogues.filter((c) => !c.library && c.forceEntries.length);
   const cover = artFor(art, 'cover', 'cover');
 
-  const onArt = async (f?: File) => {
-    if (!f) return;
-    try { const n = await importArtFromEpub(f, pack, setBusy); setBusy(''); alertish(`Imported ${n} images`); }
-    catch (e) { setBusy(''); alertish((e as Error).message); }
-  };
   const alertish = (m: string) => { setBusy(m); setTimeout(() => setBusy(''), 3000); };
   const update = async () => {
     if (!pack.source?.url) return;
@@ -119,7 +113,6 @@ export function GamePage() {
           <p className="text-ink-2 text-sm mt-1">Revision {pack.revision}{pack.source?.url ? <> · <a className="underline" href={pack.source.url} target="_blank" rel="noreferrer">source</a></> : null}</p>
           <div className="flex flex-wrap gap-2 mt-4">
             <button className="btn btn-primary" onClick={() => setNewFor(null)}><Plus size={16} /> New band</button>
-            <label className="btn cursor-pointer"><ImagePlus size={16} /> Add art from ePUB<input type="file" accept=".epub" className="sr-only" onChange={(e) => onArt(e.target.files?.[0])} /></label>
             {pack.source?.kind === 'github' && <button className="btn" onClick={update}><RefreshCw size={16} /> Update</button>}
             <label className="btn cursor-pointer"><Upload size={16} /> Import band<input type="file" accept=".json" className="sr-only" onChange={(e) => importRoster(e.target.files?.[0])} /></label>
             <button className="btn" onClick={() => downloadJson(`${pack.name}.muster.json`, pack)}><Download size={16} /> Export pack</button>
@@ -155,9 +148,6 @@ export function GamePage() {
               );
             })}
           </div>
-          {!Object.keys(art).length && (
-            <p className="text-sm text-ink-3 mt-4">Tip: add art from your own copy of the rulebook ePUB to illustrate factions and units. Images stay on this device.</p>
-          )}
         </section>
       </div>
       {newFor !== false && <NewRoster pack={pack} cat={newFor} onClose={() => setNewFor(false)} />}

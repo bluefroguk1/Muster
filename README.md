@@ -5,7 +5,7 @@ An offline-first warband and army builder for tabletop games — a modern take o
 - **Import any game** from a New Recruit / BattleScribe data repository on GitHub, or from `.gst`/`.cat` files. Games are compiled once into a JSON *game pack* and stored on the device.
 - **Works offline** as an installable PWA on phones, tablets and desktop. Rosters live in IndexedDB; nothing needs a server.
 - **Live rules engine**: costs, modifiers, conditions, hidden options, constraints and validation errors.
-- **Art from your own rulebook**: load your ePUB and Muster pulls the illustrations into this browser only (never uploaded or bundled).
+- **Illustrated**: faction and unit art from a local, personal art bundle (`public/art`, not committed).
 - **Printable band sheets** (cards view → Print / save PDF).
 - **Backups**: export/import bands, game packs (`.json`) and full backups.
 
@@ -36,11 +36,11 @@ Static hosting only — no backend.
 - `src/engine/compile.ts` — XML → `GamePack` (see `docs/pack-format.md`).
 - `src/engine/roster.ts` — evaluates modifiers (set/increment/decrement/append/replace/add/remove, repeats), conditions (scopes self/parent/root-entry/force/roster/ancestor, instanceOf), constraints and costs.
 - `src/lib/importer.ts` — GitHub and file import.
-- `src/lib/art.ts` — ePUB art extraction, with hand-tuned matches for Burrows & Badgers.
+- `src/lib/art.ts` — loads the bundled art manifest for a game.
 
 ## Art and copyright
 
-Rulebook art belongs to its publisher. Muster never ships it: each user imports art from their own purchased ePUB, and it stays in their browser. Don't commit ePUBs or extracted images (`.gitignore` blocks them).
+Artwork belongs to its publisher. It lives in `public/art/`, which is gitignored and never committed, so it only appears in local builds.
 
 ## Roadmap
 

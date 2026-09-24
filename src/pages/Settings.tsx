@@ -6,7 +6,7 @@ import { downloadJson } from '../lib/importer';
 import type { GamePack, Roster } from '../engine/types';
 
 export function Settings() {
-  const counts = useLiveQuery(async () => ({ packs: await db.packs.count(), rosters: await db.rosters.count(), art: await db.art.count() }), []);
+  const counts = useLiveQuery(async () => ({ packs: await db.packs.count(), rosters: await db.rosters.count() }), []);
   const [msg, setMsg] = useState('');
   const backup = async () => {
     downloadJson(`muster-backup-${new Date().toISOString().slice(0, 10)}.json`, {
@@ -33,7 +33,7 @@ export function Settings() {
       <section className="card p-5">
         <h2 className="text-lg font-semibold flex items-center gap-2"><HardDrive size={18} /> On this device</h2>
         <p className="text-sm text-ink-2 mt-1">
-          {counts ? `${counts.packs} games · ${counts.rosters} bands · ${counts.art} images` : '…'} {est && `· ${est}`}
+          {counts ? `${counts.packs} games · ${counts.rosters} bands` : '…'} {est && `· ${est}`}
         </p>
         <p className="text-sm text-ink-3 mt-2">Muster works fully offline. Everything is stored in this browser; back up to move bands to another device.</p>
         <div className="flex flex-wrap gap-2 mt-4">
@@ -41,10 +41,6 @@ export function Settings() {
           <label className="btn cursor-pointer"><Upload size={16} /> Restore backup<input type="file" accept=".json" className="sr-only" onChange={(e) => restore(e.target.files?.[0])} /></label>
         </div>
         {msg && <p className="text-sm mt-3 text-ok">{msg}</p>}
-      </section>
-      <section className="card p-5">
-        <h2 className="text-lg font-semibold">About art</h2>
-        <p className="text-sm text-ink-2 mt-1">Illustrations are extracted from your own copy of a game's ePUB rulebook and kept only in this browser. They are never uploaded or included in the app, so please don't share exported art.</p>
       </section>
     </main>
   );

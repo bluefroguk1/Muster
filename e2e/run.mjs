@@ -1,7 +1,6 @@
 import { chromium, devices } from 'playwright';
 import fs from 'node:fs';
 const S='/tmp/claude-0/-home-claude/60638a77-e8d8-55b4-9d0a-d17750e3c25c/scratchpad';
-const EPUB='/root/.claude/uploads/60638a77-e8d8-55b4-9d0a-d17750e3c25c/b4ddd841-9781472864659_epub.epub';
 const files=fs.readdirSync('test/fixtures/bb').map(f=>'test/fixtures/bb/'+f);
 const browser = await chromium.launch({executablePath: process.env.CHROME || '/opt/pw-browsers/chromium'});
 const ctx = await browser.newContext({ viewport:{width:1440,height:900} });
